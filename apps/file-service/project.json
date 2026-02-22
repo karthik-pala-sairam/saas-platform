@@ -1,0 +1,25 @@
+{
+  "name": "file-service",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/file-service/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "options": {
+        "outputPath": "dist/apps/file-service",
+        "main": "apps/file-service/src/main.ts",
+        "tsConfig": "apps/file-service/tsconfig.app.json",
+        "mode": "development",
+        "webpackConfig": "apps/file-service/webpack.config.cjs"
+      }
+    },
+    "serve": {
+      "executor": "@nx/js:node",
+      "options": {
+        "buildTarget": "file-service:build"
+      }
+    }
+  },
+  "tags": []
+}

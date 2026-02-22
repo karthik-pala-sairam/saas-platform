@@ -1,0 +1,27 @@
+{
+  "name": "project-service",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/project-service/src",
+  "projectType": "application",
+  "targets": {
+"build": {
+  "executor": "@nx/webpack:webpack",
+  "options": {
+    "outputPath": "dist/apps/project-service",
+    "main": "apps/project-service/src/main.ts",
+    "tsConfig": "apps/project-service/tsconfig.app.json",
+    "mode": "development",
+    "webpackConfig": "apps/project-service/webpack.config.cjs"
+  }
+}
+,
+
+    "serve": {
+      "executor": "@nx/js:node",
+      "options": {
+        "buildTarget": "project-service:build"
+      }
+    }
+  },
+  "tags": []
+}

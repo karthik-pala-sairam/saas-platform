@@ -1,0 +1,122 @@
+version: "3.9"
+
+networks:
+  saas-net:
+    driver: bridge
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: saas_platform
+      POSTGRES_USER: saas
+      POSTGRES_PASSWORD: saas
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d
+    networks:
+      - saas-net
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+    networks:
+      - saas-net
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.5.3
+    command: start-dev --import-realm
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./docker/keycloak-realm.json:/opt/keycloak/data/import/realm.json
+      - ./docker/keycloak/themes/frontend:/opt/keycloak/themes/frontend
+    networks:
+      - saas-net
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: apps/auth-service/Dockerfile
+    environment:
+      PORT: 3000
+      KEYCLOAK_ISSUER: http://keycloak:8080/realms/saas-platform
+      KEYCLOAK_AUDIENCE: frontend-angular
+    ports:
+      - "3001:3000"
+    depends_on:
+      - keycloak
+    networks:
+      - saas-net
+
+  project-service:
+    build:
+      context: .
+      dockerfile: apps/project-service/Dockerfile
+    environment:
+      PORT: 3000
+      DATABASE_URL: postgresql://saas:saas@postgres:5432/saas_platform
+      KEYCLOAK_ISSUER: http://keycloak:8080/realms/saas-platform
+      KEYCLOAK_AUDIENCE: frontend-angular
+    ports:
+      - "3002:3000"
+    depends_on:
+      - postgres
+      - keycloak
+    networks:
+      - saas-net
+
+  file-service:
+    build:
+      context: .
+      dockerfile: apps/file-service/Dockerfile
+    environment:
+      PORT: 3000
+      DATABASE_URL: postgresql://saas:saas@postgres:5432/saas_platform
+      KEYCLOAK_ISSUER: http://keycloak:8080/realms/saas-platform
+      KEYCLOAK_AUDIENCE: frontend-angular
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: 9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_BUCKET: saas-files
+      PROJECT_SERVICE_URL: http://project-service:3000/api/projects
+    ports:
+      - "3003:3000"
+    depends_on:
+      - postgres
+      - minio
+      - keycloak
+    networks:
+      - saas-net
+
+  frontend-angular:
+    build:
+      context: .
+      dockerfile: apps/frontend-angular/Dockerfile
+    ports:
+      - "4200:80"
+    depends_on:
+      - auth-service
+      - project-service
+      - file-service
+      - keycloak
+    networks:
+      - saas-net
+
+volumes:
+  postgres-data:
+  minio-data:

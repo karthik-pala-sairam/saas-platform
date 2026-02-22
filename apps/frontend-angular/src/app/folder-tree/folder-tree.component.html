@@ -1,0 +1,10 @@
+<ul class="folder-tree" *ngIf="folders.length; else noFolders">
+  <li *ngFor="let folder of folders">
+    <span>{{ folder.name }}</span>
+    <app-folder-tree [folders]="folder.children"></app-folder-tree>
+  </li>
+</ul>
+
+<ng-template #noFolders>
+  <p class="muted">No folders available.</p>
+</ng-template>

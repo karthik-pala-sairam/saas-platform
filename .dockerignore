@@ -1,0 +1,15 @@
+# Ignore node_modules
+node_modules
+**/node_modules
+
+# Ignore build outputs
+dist
+tmp
+out-tsc
+
+# Ignore git and editor files
+.git
+.gitignore
+Dockerfile.base
+docker-compose*.yml
+*.log

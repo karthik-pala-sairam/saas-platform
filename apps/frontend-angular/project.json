@@ -1,0 +1,28 @@
+{
+  "name": "frontend-angular",
+  "projectType": "application",
+  "sourceRoot": "apps/frontend-angular/src",
+  "targets": {
+    "build": {
+      "executor": "@nx/angular:application",
+      "options": {
+        "outputPath": "dist/apps/frontend-angular",
+        "browser": "apps/frontend-angular/src/main.ts",
+        "index": "apps/frontend-angular/src/index.html",
+        "tsConfig": "apps/frontend-angular/tsconfig.app.json",
+        "assets": [
+          "apps/frontend-angular/src/favicon.ico",
+          "apps/frontend-angular/src/assets",
+          "apps/frontend-angular/public"
+        ],
+        "styles": ["apps/frontend-angular/src/styles.css"]
+      }
+    },
+    "serve": {
+      "executor": "@nx/angular:dev-server",
+      "options": {
+        "buildTarget": "frontend-angular:build"
+      }
+    }
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "/api/auth": { "target": "http://localhost:3001", "secure": false },
+  "/api/project": { "target": "http://localhost:3002", "secure": false },
+  "/api/file": { "target": "http://localhost:3003", "secure": false }
+}
